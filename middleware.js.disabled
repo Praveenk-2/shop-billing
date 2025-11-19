@@ -1,0 +1,39 @@
+// import { NextResponse } from 'next/server';
+// import { verifyToken } from './lib/auth';
+
+// export function middleware(request) {
+//   const { pathname } = request.nextUrl;
+  
+//   // Public routes that don't require authentication
+//   const publicPaths = [
+//     '/login', 
+//     '/register',  // Add this line
+//     '/api/auth/login', 
+//     '/api/auth/register'  // Add this line
+//   ];
+  
+//   if (publicPaths.some(path => pathname.startsWith(path))) {
+//     return NextResponse.next();
+//   }
+  
+//   // Check for token in cookies
+//   const token = request.cookies.get('token')?.value;
+  
+//   if (!token) {
+//     return NextResponse.redirect(new URL('/login', request.url));
+//   }
+  
+//   // Verify token
+//   const decoded = verifyToken(token);
+//   if (!decoded) {
+//     return NextResponse.redirect(new URL('/login', request.url));
+//   }
+  
+//   return NextResponse.next();
+// }
+
+// export const config = {
+//   matcher: [
+//     '/((?!_next/static|_next/image|favicon.ico|public).*)',
+//   ],
+// };
