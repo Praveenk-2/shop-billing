@@ -6,7 +6,7 @@ export default function Button({
   disabled = false,
   className = ''
 }) {
-  const baseStyles = 'px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'h-fit px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variants = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700',
@@ -21,7 +21,7 @@ export default function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${baseStyles} ${variants[variant]} ${className}`}
+      className={`${baseStyles} ${variants[variant]} ${className} cursor-pointer`}
     >
       {children}
     </button>

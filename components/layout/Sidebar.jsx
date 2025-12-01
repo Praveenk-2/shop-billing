@@ -1,12 +1,11 @@
 'use client';
-
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  // const { user } = useAuth();
+  const { user } = useAuth();
 
   const menuItems = [
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },

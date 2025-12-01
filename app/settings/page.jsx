@@ -6,10 +6,12 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
 import Table from '@/components/ui/Table';
+import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetchCategories();
@@ -35,13 +37,21 @@ export default function SettingsPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Settings</h1>
+      <div className='flex justify-between'>
+        <h1 className="text-3xl font-bold mb-6">Settings</h1>
+        <div className='flex gap-4'>
+          <Button onClick={() => router.push('/settings/users')}>
+            Check User
+          </Button>
 
-      <Card title="Categories" className="mb-6">
-        <div className="flex justify-end mb-4">
           <Button onClick={() => setShowModal(true)}>
             Add Category
           </Button>
+        </div>
+      </div>
+
+      <Card title="Categories" className="mb-6">
+        <div className="flex justify-end mb-4">
         </div>
         <Table columns={columns} data={categories} />
       </Card>
@@ -100,13 +110,13 @@ function CategoryForm({ onSuccess }) {
       <Input
         label="Category Name"
         value={formData.category_name}
-        onChange={(e) => setFormData({...formData, category_name: e.target.value})}
+        onChange={(e) => setFormData({ ...formData, category_name: e.target.value })}
         required
       />
       <Input
         label="Description"
         value={formData.description}
-        onChange={(e) => setFormData({...formData, description: e.target.value})}
+        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
       />
       <Button type="submit" disabled={loading} className="w-full">
         {loading ? 'Adding...' : 'Add Category'}

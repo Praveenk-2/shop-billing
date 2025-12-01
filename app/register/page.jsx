@@ -1,52 +1,48 @@
+// app/register/page.jsx
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
-import Alert from '@/components/ui/Alert';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
     password: '',
     confirmPassword: '',
-    full_name: ''
+    full_name: '',
+    email: '',
+    role: 'cashier'
   });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
 
-    // Validate passwords match
+    // Validation
+    if (!formData.username || !formData.password || !formData.full_name) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    // Validate password length
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
-    // Validate username length
-    if (formData.username.length < 3) {
-      setError('Username must be at least 3 characters long');
+      setError('Password must be at least 6 characters');
       return;
     }
 
@@ -58,120 +54,148 @@ export default function RegisterPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: formData.username,
-          email: formData.email,
           password: formData.password,
           full_name: formData.full_name,
-          role: 'cashier' // Default role
+          email: formData.email,
+          role: formData.role
         })
       });
 
       const data = await res.json();
 
       if (data.success) {
-        setSuccess('Registration successful! Redirecting to login...');
-        setTimeout(() => {
-          router.push('/login');
-        }, 2000);
+        alert('Registration successful! Please login.');
+        router.push('/login');
       } else {
         setError(data.message || 'Registration failed');
       }
     } catch (error) {
-      setError('Registration failed. Please try again.');
+      setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">Create Account</h2>
-          <p className="text-gray-600 mt-2">Join Shop Billing System</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-md p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
+          <p className="text-gray-600">Register for billing system</p>
         </div>
 
-        {error && <Alert type="error" message={error} onClose={() => setError('')} />}
-        {success && <Alert type="success" message={success} />}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Full Name"
-            name="full_name"
-            type="text"
-            value={formData.full_name}
-            onChange={handleChange}
-            placeholder="Enter your full name"
-            required
-          />
-
-          <Input
-            label="Username"
-            name="username"
-            type="text"
-            value={formData.username}
-            onChange={handleChange}
-            placeholder="Choose a username"
-            required
-          />
-
-          <Input
-            label="Email (Optional)"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="your.email@example.com"
-          />
-
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Create a password (min 6 characters)"
-            required
-          />
-
-          <Input
-            label="Confirm Password"
-            name="confirmPassword"
-            type="password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            placeholder="Confirm your password"
-            required
-          />
-
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-blue-800">
-            <p className="font-semibold mb-1">Password Requirements:</p>
-            <ul className="list-disc list-inside space-y-1 text-xs">
-              <li>At least 6 characters long</li>
-              <li>Username must be at least 3 characters</li>
-            </ul>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Full Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="full_name"
+              value={formData.full_name}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="Enter your full name"
+              required
+            />
           </div>
 
-          <Button
-            type="submit"
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Username <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="Choose a username"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email (Optional)
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="your.email@example.com"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="Minimum 6 characters"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm Password <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="Re-enter password"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Role <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              required
+            >
+              <option value="cashier">Cashier</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          <button
+            onClick={handleSubmit}
             disabled={loading}
-            className="w-full"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors  cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating Account...' : 'Register'}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link href="/login" className="text-blue-600 hover:text-blue-800 font-semibold">
-              Login here
-            </Link>
-          </p>
+          </button>
         </div>
 
-        <div className="mt-4 pt-4 border-t text-center">
-          <p className="text-xs text-gray-500">
-            By registering, you agree to our Terms of Service and Privacy Policy
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Already have an account?{' '}
+            <Link href="/login" className="text-blue-600 hover:text-blue-700 font-semibold cursor-pointer">
+              Login here
+            </Link>
           </p>
         </div>
       </div>

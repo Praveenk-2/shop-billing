@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect, useRef } from 'react';
 
 export default function BillingPage() {
@@ -190,10 +189,10 @@ export default function BillingPage() {
   const updateQuantity = (index, newQuantity) => {
     const qty = parseInt(newQuantity) || 0;
     
-    // if (qty <= 0) {
-    //   removeItem(index);
-    //   return;
-    // }
+    if (qty <= 0) {
+      removeItem(index);
+      return;
+    }
 
     const newItems = [...billItems];
     
@@ -297,11 +296,16 @@ export default function BillingPage() {
       console.log('API Response:', data);
 
       if (data.success) {
-        alert(`✅ Bill ${billNumber} saved successfully!\n\nBill ID: ${data.data.bill_id}\nTotal: ₹${totals.netAmount}\n\nThe bill has been stored in the database.`);
+        const billId = data.data.bill_id;
         
         // Clear the bill
         setBillItems([]);
         setBillNumber(`BILL-${Date.now()}`);
+        
+        // Ask to print
+        if (confirm(`✅ Bill saved successfully!\n\nBill ID: ${billId}\nTotal: ₹${totals.netAmount}\n\nDo you want to print the bill?`)) {
+          window.open(`/billing/print/${billId}`, '_blank');
+        }
         
         // Focus back to barcode input
         barcodeInputRef.current?.focus();
@@ -317,18 +321,9 @@ export default function BillingPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="h-[15%] bg-blue-600 text-white p-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Billing System</h1>
-        <div className="text-right">
-          <p className="text-sm">Bill No: {billNumber}</p>
-          <p className="text-sm">Date: {billDate}</p>
-        </div>
-      </div>
-
+    <div className="flex flex-col bg-gray-50">
       {/* Main Content */}
-      <div className="flex h-[85%]">
+      <div className="flex h-[88vh]">
         {/* Left Side - Bill Items */}
         <div className="w-[75%] border-r border-gray-300 bg-white overflow-hidden flex flex-col">
           {/* Table Header */}
@@ -346,7 +341,7 @@ export default function BillingPage() {
           {/* Bill Items */}
           <div className="flex-1 overflow-y-auto">
             {billItems.map((item, index) => (
-              <div key={index} className="input-tab border-b border-gray-200 text-center flex items-stretch min-h-[40px] hover:bg-gray-50 relative">
+              <div key={index} className="border-b border-gray-200 text-center flex items-stretch min-h-[40px] hover:bg-gray-50">
                 <span className="w-[8%] border-r border-gray-300 py-2 flex items-center justify-center text-sm">
                   {index + 1}
                 </span>
@@ -383,7 +378,6 @@ export default function BillingPage() {
                 <span className="w-[8%] py-2 flex items-center justify-center text-sm">
                   {item.tax_rate}%
                 </span>
-                <span className="absolute right-2 top-2 text-[#a30000] cursor-pointer input-X" onClick={() => removeItem(index)}>&times;</span>
               </div>
             ))}
 
@@ -446,7 +440,7 @@ export default function BillingPage() {
         </div>
 
         {/* Right Side - Summary */}
-        <div className="w-[25%] bg-white flex flex-col">
+        <div className="w-[25%] h-full bg-white flex flex-col justify-between">
           <div className="flex-1 overflow-y-auto">
             <div className="flex w-full border-b border-gray-300">
               <span className="border-r border-gray-300 text-xs p-2 w-[50%] bg-gray-100 font-semibold">Bill No</span>
@@ -505,7 +499,7 @@ export default function BillingPage() {
           </div>
 
           {/* Total Section */}
-          <div className="border-t-2 border-gray-400 p-4 bg-green-50">
+          <div className="border-t-2 border-gray-400 p-4 bg-green-50 flex flex-col justify-end">
             <h2 className="text-3xl font-bold text-green-700">Total: ₹{totals.netAmount}</h2>
             <button 
               className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"

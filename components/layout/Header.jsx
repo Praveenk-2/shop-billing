@@ -1,10 +1,23 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import Button from '@/components/ui/Button';
 
 export default function Header() {
-  // const { user, logout } = useAuth();
+  const { user, logout } = useAuth();
+  const pathname = usePathname();
+  
+    const menuItems = [
+      { href: '/dashboard', label: 'Dashboard', icon: '📊' },
+      { href: '/billing', label: 'Billing', icon: '🧾' },
+      { href: '/products', label: 'Products', icon: '📦' },
+      { href: '/customers', label: 'Customers', icon: '👥' },
+      { href: '/inventory', label: 'Inventory', icon: '📋' },
+      { href: '/reports', label: 'Reports', icon: '📈' },
+      { href: '/settings', label: 'Settings', icon: '⚙️' }
+    ];
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -21,6 +34,26 @@ export default function Header() {
               day: 'numeric' 
             })}
           </p>
+        </div>
+
+        <div className=''>
+          <ul className="space-y-2 flex gap-1">
+            {menuItems.map((item) => (
+              <li key={item.href} className='text-[14px]'>
+                <Link
+                  href={item.href}
+                  className={`flex items-center text-black px-3 py-2 gap-1 rounded-lg transition-colors ${
+                    pathname === item.href
+                      ? 'bg-blue-600 text-white'
+                      : 'hover:bg-blue-400 hover:text-white'
+                  }`}
+                >
+                  <span className="text-[15px]">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
         
         <div className="flex items-center space-x-4">

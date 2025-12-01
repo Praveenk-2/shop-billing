@@ -1,90 +1,64 @@
+// app/api/bills/[id]/route.js
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
-// GET single bill with items
 export async function GET(request, { params }) {
   try {
+    // ⭐ IMPORTANT: In Next.js 16, params is a Promise and must be awaited
+    const { id } = await params;
+    const billId = id;
+
+    console.log('Fetching bill ID:', billId); // Debug log
+
     // Get bill details
     const [bills] = await pool.execute(
-      `SELECT b.*, c.customer_name, c.phone, c.address, u.full_name as cashier_name
+      `SELECT b.*, u.full_name as user_name, c.customer_name, c.phone as customer_phone
        FROM bills b
-       LEFT JOIN customers c ON b.customer_id = c.customer_id
        LEFT JOIN users u ON b.user_id = u.user_id
+       LEFT JOIN customers c ON b.customer_id = c.customer_id
        WHERE b.bill_id = ?`,
-      [params.id]
+      [billId]
     );
-    
+
+    console.log('Bills found:', bills.length); // Debug log
+
     if (bills.length === 0) {
       return NextResponse.json(
         { success: false, message: 'Bill not found' },
         { status: 404 }
       );
     }
-    
-    // Get bill items
+
+    const bill = bills[0];
+
+    // Get bill items with product details
     const [items] = await pool.execute(
       `SELECT bi.*, p.product_name
        FROM bill_items bi
        JOIN products p ON bi.product_id = p.product_id
-       WHERE bi.bill_id = ?`,
-      [params.id]
+       WHERE bi.bill_id = ?
+       ORDER BY bi.item_id`,
+      [billId]
     );
-    
-    const bill = {
-      ...bills[0],
-      items
+
+    console.log('Items found:', items.length); // Debug log
+
+    // Combine bill and items
+    const billData = {
+      ...bill,
+      items: items
     };
-    
-    return NextResponse.json({ 
-      success: true, 
-      data: bill 
+
+    return NextResponse.json({
+      success: true,
+      data: billData
     });
+
   } catch (error) {
     console.error('Get bill error:', error);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
     );
-  }
-}
-
-// DELETE bill (with stock reversal)
-export async function DELETE(request, { params }) {
-  const connection = await pool.getConnection();
-  
-  try {
-    await connection.beginTransaction();
-    
-    // Get bill items before deletion
-    const [items] = await connection.execute(
-      'SELECT product_id, quantity FROM bill_items WHERE bill_id = ?',
-      [params.id]
-    );
-    
-    // Restore stock
-    for (const item of items) {
-      await connection.execute(
-        'UPDATE products SET stock_quantity = stock_quantity + ? WHERE product_id = ?',
-        [item.quantity, item.product_id]
-      );
-    }
-    
-    // Delete bill (cascade will delete bill_items)
-    await connection.execute('DELETE FROM bills WHERE bill_id = ?', [params.id]);
-    
-    await connection.commit();
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Bill deleted successfully' 
-    });
-  } catch (error) {
-    await connection.rollback();
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 500 }
-    );
-  } finally {
-    connection.release();
   }
 }

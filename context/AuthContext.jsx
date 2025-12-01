@@ -16,17 +16,13 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth/me');
-      const data = await res.json();
-      
-      if (data.success) {
-        setUser(data.data);
-      } else {
-        setUser(null);
+      const response = await fetch('/api/me');
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
       }
     } catch (error) {
-      console.error('Auth check error:', error);
-      setUser(null);
+      console.error('Auth check failed:', error);
     } finally {
       setLoading(false);
     }
@@ -34,29 +30,37 @@ export function AuthProvider({ children }) {
 
   const login = async (username, password) => {
     try {
-      const res = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      
-      const data = await res.json();
-      
-      if (data.success) {
+
+      const data = await response.json();
+      console.log('Login response:', data);
+
+      if (data.success && data.data) {
         setUser(data.data.user);
-        router.push('/dashboard');
+        
+        // Force immediate redirect here
+        console.log('Setting user and redirecting from AuthContext');
+        setTimeout(() => {
+          window.location.href = '/billing';
+        }, 0);
+        
         return { success: true };
       } else {
-        return { success: false, message: data.message };
+        return { success: false, message: data.message || 'Login failed' };
       }
     } catch (error) {
-      return { success: false, message: 'Login failed' };
+      console.error('Login error:', error);
+      return { success: false, message: 'Network error. Please try again.' };
     }
   };
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/logout', { method: 'POST' });
       setUser(null);
       router.push('/login');
     } catch (error) {
@@ -65,7 +69,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );

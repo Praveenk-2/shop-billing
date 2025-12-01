@@ -28,7 +28,7 @@ export default function DashboardPage() {
   };
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6 text-center">Loading...</div>;
   }
 
   const billColumns = [
